@@ -41,7 +41,17 @@ class ReleaseConfig
 
     merged["addons"] = addons.to_a | other.addons.to_a
     merged["build_env"] = build_env.merge(other.build_env)
-    merged["config_vars"] = config_vars.merge(other.config_vars)
+    merged["config_vars"] = config_vars.merge(other.config_vars) do |key, oldval, newval|
+      if (key == "PATH")
+        old_dirs = oldval.split(":")
+        new_dirs = newval.split(":")
+        common_dirs = old_dirs & new_dirs
+        new_dirs -= common_dirs
+        old_dirs -= common_dirs
+        newval = (new_dirs << old_dirs << common_dirs).join(":")
+      end
+      newval
+    end
     merged["default_process_types"] = default_process_types.merge(other.default_process_types)
 
     merged
